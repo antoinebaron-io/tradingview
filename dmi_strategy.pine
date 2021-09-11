@@ -1,0 +1,47 @@
+//@version=4
+strategy("DMI Strategy", shorttitle = "DMI strategy", overlay=true, initial_capital=100, default_qty_type=strategy.percent_of_equity, default_qty_value=100, currency="USD", commission_type=strategy.commission.percent, commission_value=0.07)
+
+// From "Bitcoin Trading Challenge" youtube channel
+// https://youtu.be/k5xve3_2Ctc
+// when adx crosses above 25, a new trend is forming
+// we long if +DI is above -DI and ADX
+// we short if -DI is above +DI and adx
+// we take profit if adx reaches 50 or DI cross
+
+//////// TIME PERIODS //////
+
+// Define start testing period
+testStartYear = input(2021, "Backtest Start Year")
+testStartMonth = input(5, "Backtest Start Month")
+testStartDay = input(1, "Backtest Start Day")
+
+// Define stop testing period
+testStopYear = input(2021, "Backtest Stop Year")
+testStopMonth = input(5, "Backtest Stop Month")
+testStopDay = input(30, "Backtest Stop Day")
+
+// periods handling
+testPeriodStart = timestamp(testStartYear,testStartMonth,testStartDay,0,0)
+testPeriodStop = timestamp(testStopYear,testStopMonth,testStopDay,0,0)
+testPeriod() =>
+    time >= testPeriodStart and time <= testPeriodStop ? true : false
+
+
+//////// STRATEGY ///////
+
+// get DMI
+[diplus, diminus, adx] = dmi(14, 14)
+
+//conditions to open position
+bullSignal = diplus>diminus and diplus>adx and adx>25 and testPeriod()
+bearSignal = diminus>diplus and diminus>adx and adx>25 and testPeriod()
+
+//conditions to close position
+endBullSignal = adx>=50 or cross(diplus, diminus)
+endBearSignal = adx>=50 or cross(diminus, diplus)
+
+strategy.entry("buy", true, when = bullSignal)
+strategy.entry("sell", false, when = bearSignal)
+
+strategy.close("buy", when = endBullSignal)
+strategy.close("sell", when = endBearSignal)
