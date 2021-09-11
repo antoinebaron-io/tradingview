@@ -26,7 +26,6 @@ testPeriodStop = timestamp(testStopYear,testStopMonth,testStopDay,0,0)
 testPeriod() =>
     time >= testPeriodStart and time <= testPeriodStop ? true : false
 
-
 //////// STRATEGY ///////
 
 // get DMI
